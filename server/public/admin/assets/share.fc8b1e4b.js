@@ -1,0 +1,1 @@
+import{r as s}from"./index.9ffd2ade.js";function r(t){return s.get({url:"/task.task_share/lists",params:t})}function a(t){return s.get({url:"/task.task_share/getConfig",params:t})}function n(t){return s.post({url:"/task.task_share/setConfig",params:t})}export{a,n as e,r as g};

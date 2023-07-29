@@ -1,0 +1,133 @@
+<template>
+    <div class="pt-[10px]">
+        <el-form label-width="120px" ref="formRef" :rules="rules" :model="formData">
+            <el-form-item label="模型计费">
+                <div>
+                    <el-switch
+                        v-model="formData.is_open"
+                        :active-value="1"
+                        :inactive-value="0"
+                    ></el-switch>
+                    <div class="form-tips !text-[14px]">
+                        开启后用户可以在前端选择想要使用的模型，单独计费。
+                    </div>
+                </div>
+            </el-form-item>
+            <el-form-item label="会员免费接口" v-if="formData.is_open">
+                <div>
+                    <el-radio-group v-model="formData.member_model">
+                        <el-radio :label="formData.member_model">
+                            {{ formData.member_model }}
+                        </el-radio>
+                    </el-radio-group>
+                    <div class="form-tips !text-[14px]">
+                        在「AI模型」选中的AI接口。开通会员，使用会员免费接口不消耗条数，切换其他接口仍需消耗条数。
+                    </div>
+                </div>
+            </el-form-item>
+            <el-form-item label="模型设置" v-if="formData.is_open">
+                <el-table ref="tableRef" size="large" row-key="key" :data="modelList">
+<!--                    <el-table-column width="50">-->
+<!--                        <template #default>-->
+<!--                            <div class="move-icon cursor-move">-->
+<!--                                <Icon name="el-icon-Rank" />-->
+<!--                            </div>-->
+<!--                        </template>-->
+<!--                    </el-table-column>-->
+                    <el-table-column label="模型名称" prop="name" min-width="120" />
+                    <el-table-column label="别名" prop="alias" min-width="100">
+                        <template #default="{ row }">
+                            <el-input v-model="row.alias" placeholder="为空时显示默认名字" />
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="消耗条数" prop="balance" min-width="100">
+                        <template #default="{ row }">
+                            <el-input v-model="row.balance" placeholder="为空默认1条" />
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="状态" min-width="100">
+                        <template #default="{ row }">
+                            <el-switch v-model="row.status" :active-value="1" :inactive-value="0" />
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-form-item>
+        </el-form>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { getChatBillingConfig, setChatBillingConfig } from '@/api/setting/ai_model_cost'
+
+const props = defineProps({
+    popRef: {
+        type: Object,
+        default: {} as any
+    }
+})
+
+//表单ref
+const formRef = shallowRef()
+
+//表单数据
+const formData: any = ref({
+    is_open: 0,
+    member_model: '',
+    billing_config: {}
+})
+// 模型设置列表
+const modelList = ref<any[]>([])
+
+//表单校验规则
+const rules = {
+    api_key: [
+        {
+            required: true,
+            message: '请输入秘钥',
+            trigger: ['blur']
+        }
+    ],
+    api_type: [
+        {
+            required: true,
+            message: '请选择',
+            trigger: ['blur']
+        }
+    ]
+}
+
+/**
+ * 获取初始化数据
+ */
+const getData = async () => {
+    const data = await getChatBillingConfig()
+    formData.value = data
+    modelList.value = convertObjectToArray(data.billing_config)
+}
+
+// 数组转对象
+const convertObjectToArray = (obj: any) => {
+    return Object.values(obj);
+}
+
+// 对象转数组
+const convertArrayToObject = (arr: any[]) => {
+    return arr.reduce(function (obj, item) {
+        obj[item.key] = item
+        return obj
+    }, {})
+}
+
+const submit = async () => {
+    await formRef.value.validate()
+    formData.value.billing_config = convertArrayToObject(modelList.value)
+    await setChatBillingConfig(formData.value)
+    getData()
+}
+
+getData()
+
+defineExpose({ submit })
+</script>
+
+<style scoped lang="scss"></style>

@@ -1,0 +1,1 @@
+import{r as i}from"./index.9ffd2ade.js";function n(t){return i.get({url:"/task.task_invite/lists",params:t})}function s(t){return i.get({url:"/task.task_invite/getConfig",params:t})}function r(t){return i.post({url:"/task.task_invite/setConfig",params:t})}export{s as a,r as e,n as g};
